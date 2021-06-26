@@ -1,8 +1,11 @@
 from numpy.core.defchararray import count
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.linear_model import Perceptron
-import numpy as np
+
 import matplotlib.pyplot as plt
+from scipy.io import arff
+import pandas as pd
+import numpy as np
 
 class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
@@ -10,7 +13,6 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         self.lr = lr
         self.shuffle = shuffle
         self.epochs = epochs
-        self.accuracy = 0
 
     def fit(self, X: np.ndarray, y: np.ndarray, initial_weights=None):
         self.weights = self.initialize_weights(X.shape[1]) if not initial_weights else initial_weights
@@ -39,12 +41,11 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         net = net.tolist()
         yHat = [1 if item>0 else 0 for item in net]
         return yHat
- 
 
     def initialize_weights(self, n):
         weights = np.zeros((n+1))
         return weights
-
+        
     def score(self, X, y):
         yHat = self.predict(X)
         counter = 0
@@ -76,19 +77,26 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
-        pass
+        return self.weights
 
-X = np.array([
-[-0.4, 0.3],
-[-0.3, 0.8],
-[-0.2, 0.3],
-[-0.1, 0.9],
-[-0.1, 0.1],
-[0.0, -0.2],
-[0.1, 0.2,],
-[0.2, -0.2],
-])
-Y = np.array([1,1,1,1,0,0,0,0])
+data = arff.loadarff("b.arff")
+df = pd.DataFrame(data[0])
+X = df.iloc[:,:-1].to_numpy()
+Y = df.iloc[:,-1].to_numpy().astype(np.int)
+
+# print(y)
+
+# X = np.array([
+# [-0.4, 0.3],
+# [-0.3, 0.8],
+# [-0.2, 0.3],
+# [-0.1, 0.9],
+# [-0.1, 0.1],
+# [0.0, -0.2],
+# [0.1, 0.2,],
+# [0.2, -0.2],
+# ])
+# Y = np.array([1,1,1,1,0,0,0,0])
 
 A = PerceptronClassifier(lr=0.1, shuffle=False, epochs=None)
 A.fit(X=X, y=Y)
