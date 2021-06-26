@@ -20,14 +20,14 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         bias = np.ones(X.shape[0]).reshape(X.shape[0],1)
         X = np.append(X, bias, axis=1)
    
-        if self.epoch == None:
+        if self.epochs == None:
             i=0
-            accuracy = 2
-            while np.mod(accuracy-self.accuracy) > 1 or i <=50:
-                accuracy = self.accuracy
+
+            while self.accuracy <= .95 and i <=50:
                 self.epoch(X)
-                self.accuracy = self.score(self.X, self.y)
+                self.accuracy = self.score(X, self.y)
                 i = i + 1
+                print(self.score(X, self.y))  
         else:
             for i in range(self.epochs):
                 self.epoch(X)
@@ -51,7 +51,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         for yy, yh in zip(y, yHat):
             if yy == yh:
                 counter = counter + 1
-        return counter*100/len(y)
+        return counter/len(y)
 
     def _shuffle_data(self, X, y):
         concat = np.append(X,y.reshape(len(y),1), axis=1)
@@ -90,5 +90,5 @@ X = np.array([
 ])
 Y = np.array([1,1,1,1,0,0,0,0])
 
-A = PerceptronClassifier(lr=0.1, shuffle=False, epochs=10)
+A = PerceptronClassifier(lr=0.1, shuffle=False, epochs=None)
 A.fit(X=X, y=Y)
