@@ -31,12 +31,12 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         else:
             for i in range(self.epochs):
                 self.epoch(X)
-                # print(self.score(self.X, self.y))         
+                print(self.score(X, self.y))         
         return self
 
     def predict(self, X:np.ndarray):
         net  = X @ self.weights
-        net = net.to_list()
+        net = net.tolist()
         yHat = [1 if item>0 else 0 for item in net]
         return yHat
  
