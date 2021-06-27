@@ -29,7 +29,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             while self.accuracy <= .95 and i <=50:
                 # print("Epoch " + str(i+1))
                 self.epoch(X)
-                self.accuracy = self.score(X, self.y)
+                self.accuracy = self.score(X[:,:-1], self.y)
                 i = i + 1
                 # print("Accuracy: " + str(self.score(X, self.y)) + "\n")  
         else:
@@ -58,7 +58,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
             if yy == yh:
                 counter = counter + 1
         self.accuracy = counter/len(y)
-        self.print_data()
+        # self.print_data()
         return counter/len(y)
 
     def _shuffle_data(self, X, y):
@@ -99,10 +99,10 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
         print("Accuracy: " + str(self.accuracy) + "\n")
 
 
-data = arff.loadarff("linsep2nonorigin.arff")
-df = pd.DataFrame(data[0])
-X = df.iloc[:,:-1].to_numpy()
-Y = df.iloc[:,-1].to_numpy().astype(np.int)
+# data = arff.loadarff("linsep2nonorigin.arff")
+# df = pd.DataFrame(data[0])
+# X = df.iloc[:,:-1].to_numpy()
+# Y = df.iloc[:,-1].to_numpy().astype(np.int)
 
 # print(y)
 
@@ -118,7 +118,7 @@ Y = df.iloc[:,-1].to_numpy().astype(np.int)
 # ])
 # Y = np.array([1,1,1,1,0,0,0,0])
 
-A = PerceptronClassifier(lr=0.1, shuffle=False, epochs=10)
-xEval, yEval = A.create_test_data(X,Y,1)
-Accuracy = A.fit(X=X, y=Y).score(xEval,yEval)
+# A = PerceptronClassifier(lr=0.1, shuffle=False, epochs=10)
+# xEval, yEval = A.create_test_data(X,Y,1)
+# Accuracy = A.fit(X=X, y=Y).score(xEval,yEval)
 # aSelf.print_data(xEval,yEval)
