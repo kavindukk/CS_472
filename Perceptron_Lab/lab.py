@@ -2,6 +2,7 @@ from numpy.core.defchararray import count
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.linear_model import Perceptron
 
+
 import matplotlib.pyplot as plt
 from scipy.io import arff
 import pandas as pd
@@ -85,8 +86,7 @@ class PerceptronClassifier(BaseEstimator,ClassifierMixin):
     def create_test_data(self, X, y, percentage):
         #Give the percentage as a value from 0-1; 10% eqals to 0.1
         concat = np.append(X,y.reshape(len(y),1), axis=1)
-        noOfDataPoints = X.shape[0] * percentage
-        noOfDataPoints = int(np.rint(noOfDataPoints))
+        noOfDataPoints = int(X.shape[0] * percentage)
         concat = concat[np.random.choice(concat.shape[0], noOfDataPoints, replace=False)]
         return concat[:, :-1], concat[:,-1]
 
