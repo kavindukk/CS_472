@@ -78,15 +78,18 @@ class MLP(BaseEstimator,ClassifierMixin):
     def forward_pass(self,input_):
         x_ = np.append(input_, self.bias)
         output = None
+        outputList = list()
         for i in range(len(self.network)):
             if i==0:
                 output = self.weights[i] @ x_                 
             elif i != len(self.network) -1:
                 output = self.sigmoid(output)
+                outputList.append(output)
                 output = self.weights[i] @ np.append(output,self.bias)                 
             else:
                 output = self.sigmoid(output)  
-        return output
+                outputList.append(output)
+        return output, outputList
 
     def sigmoid(self, net):
         return 1/(1+np.exp(-net))
