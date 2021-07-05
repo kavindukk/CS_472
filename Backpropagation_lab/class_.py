@@ -57,8 +57,12 @@ class MLP(BaseEstimator,ClassifierMixin):
         """
         pass
 
-    def epoch(self):        
-        pass
+    def epoch(self, X, y):        
+        if self.shuffle == True:
+            X, y = self._shuffle_data(X,y)
+        
+        for i in range(X.shape[0]): 
+            self.process_a_data_instance_of_an_epoch(X[i], y[i])
 
     def process_a_data_instance_of_an_epoch(self, X, y):
         op, opList = self.forward_pass(X)
@@ -69,11 +73,10 @@ class MLP(BaseEstimator,ClassifierMixin):
         for delta, op in zip(deltaList, opList[:-1]):
             dw = self.calculate_dW(op, delta)
             dwList.append(dw)
-            print(dw)
-        self.DeltaW = dwList
-
+            # print(dw)
         for i in range(len(self.weights)):
-            self.weights[i] = self.weights[i] - self.DeltaW[i]
+            self.weights[i] = self.weights[i] + dwList[i] + self.momentum*self.DeltaW[i]
+        self.DeltaW = dwList
 
 
     def initialize_weights(self, noOfInputs, noOfOutputs):

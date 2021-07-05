@@ -57,6 +57,7 @@ def delta_last_layer(target:np.array, result:list):
 delta1 = delta_last_layer(np.array([0,1]), op)
 # print(delta1)
 dW = calculate_dW(1,opList[-2], delta1)
+print(dW)
 #######################################
 
 def delta_list(outputList, deltaList, weights):
