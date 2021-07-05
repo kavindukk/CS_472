@@ -25,7 +25,7 @@ def forward_pass(input_, network,  weights, bias=1):
     for i in range(len(network)):
         if i==0:
             output = weights[i] @ x_  
-            outputList.append(output)               
+            outputList.append(input_)               
         elif i != len(network) -1:
             output = sigmoid(output)
             outputList.append(output)
@@ -88,7 +88,8 @@ def delta_full_list(outputL, delta, weights):
 
 
 dList = delta_full_list(opList, delta1, weights)
-print(dList)
+dw2 = calculate_dW(1,opList[0], dList[0])
+# print(dw2)
 
 
 

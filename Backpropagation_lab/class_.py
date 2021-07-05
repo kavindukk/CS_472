@@ -23,7 +23,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.momentum = momentum
         self.shuffle = shuffle
         self.bias = bias
-        self.prevDeltaW = None
+        self.DeltaW = None
 
 
     def fit(self, X, y, initial_weights=None):
@@ -38,8 +38,12 @@ class MLP(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        self.weights = self.initialize_weights() if not initial_weights else initial_weights
-        self.prevDeltaW()
+        self.weights = self.initialize_weights(2,2) if not initial_weights else initial_weights
+        self.initialize_delta_weights()
+        self.X = X
+        self.y = y
+
+        self.epoch()
 
         return self
 
@@ -53,6 +57,25 @@ class MLP(BaseEstimator,ClassifierMixin):
         """
         pass
 
+    def epoch(self):        
+        pass
+
+    def process_a_data_instance_of_an_epoch(self, X, y):
+        op, opList = self.forward_pass(X)
+        deltaLast = self.delta_last_layer(y,op)
+        deltaList = self.delta_full_list(opList, deltaLast)
+        
+        dwList = list()
+        for delta, op in zip(deltaList, opList[:-1]):
+            dw = self.calculate_dW(op, delta)
+            dwList.append(dw)
+            print(dw)
+        self.DeltaW = dwList
+
+        for i in range(len(self.weights)):
+            self.weights[i] = self.weights[i] - self.DeltaW[i]
+
+
     def initialize_weights(self, noOfInputs, noOfOutputs):
         """ Initialize weights for perceptron. Don't forget the bias!
 
@@ -65,22 +88,23 @@ class MLP(BaseEstimator,ClassifierMixin):
         else:
             
             self.network = [noOfInputs] + self.hidden_layer_widths + [noOfOutputs]
-            weigts = self.assign_weight_matrix()
-        return weigts
+            weights = self.assign_weight_matrix()
+        return weights
     
-    def initialize_initial_delta_weights(self):
+    def initialize_delta_weights(self):
         dWList = list()
         for item in self.weights:
             dw = np.zeros_like(item)
             dWList.append(dw)
-        self.prevDeltaW = dWList
+        self.DeltaW = dWList
 
     def assign_weight_matrix(self):
         weights = list()
         for i in range(1,len(self.network)):
             m = self.network[i]
             n = self.network[i-1]+1
-            weight = np.random.normal(loc=0, scale=np.sqrt(1), size=(m,n))            
+            # weight = np.random.normal(loc=0, scale=np.sqrt(1), size=(m,n))            
+            weight = np.ones((m,n))            
             weights.append(weight)
         return weights
 
@@ -91,7 +115,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         for i in range(len(self.network)):
             if i==0:
                 output = self.weights[i] @ x_ 
-                outputList.append(output)                
+                outputList.append(np.array(input_))                
             elif i != len(self.network) -1:
                 output = self.sigmoid(output)
                 outputList.append(output)
@@ -119,10 +143,10 @@ class MLP(BaseEstimator,ClassifierMixin):
             delta.append(dt)
         return delta
 
-    def delta_full_list(self, outputL, delta, weights):
+    def delta_full_list(self, outputL, delta):
         deltaL = [delta]
         Routput = outputL[::-1]
-        Rweights = weights[::-1]
+        Rweights = self.weights[::-1]
         for i in range(1,len(Routput)-1):
             output = Routput[i]
             dList = list()
