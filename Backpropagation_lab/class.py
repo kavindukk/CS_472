@@ -23,6 +23,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.momentum = momentum
         self.shuffle = shuffle
         self.bias = bias
+        self.prevDeltaW = None
 
 
     def fit(self, X, y, initial_weights=None):
@@ -38,6 +39,7 @@ class MLP(BaseEstimator,ClassifierMixin):
 
         """
         self.weights = self.initialize_weights() if not initial_weights else initial_weights
+        self.prevDeltaW()
 
         return self
 
@@ -65,6 +67,13 @@ class MLP(BaseEstimator,ClassifierMixin):
             self.network = [noOfInputs] + self.hidden_layer_widths + [noOfOutputs]
             weigts = self.assign_weight_matrix()
         return weigts
+    
+    def initialize_initial_delta_weights(self):
+        dWList = list()
+        for item in self.weights:
+            dw = np.zeros_like(item)
+            dWList.append(dw)
+        self.prevDeltaW = dWList
 
     def assign_weight_matrix(self):
         weights = list()
@@ -81,7 +90,8 @@ class MLP(BaseEstimator,ClassifierMixin):
         outputList = list()
         for i in range(len(self.network)):
             if i==0:
-                output = self.weights[i] @ x_                 
+                output = self.weights[i] @ x_ 
+                outputList.append(output)                
             elif i != len(self.network) -1:
                 output = self.sigmoid(output)
                 outputList.append(output)
@@ -93,6 +103,35 @@ class MLP(BaseEstimator,ClassifierMixin):
 
     def sigmoid(self, net):
         return 1/(1+np.exp(-net))
+
+    def calculate_dW(self, output:np.array, delta:list):
+        dW = list()
+        for d in delta:
+            dW.append(np.array(np.append(output,1))*d)
+        dW = np.array(dW)*self.lr
+        # print(dW)
+        return dW
+
+    def delta_last_layer(self, target:np.array, result:list):
+        delta = list()
+        for t,o in zip(target, result):
+            dt = (t-o)*o*(1-o)
+            delta.append(dt)
+        return delta
+
+    def delta_full_list(self, outputL, delta, weights):
+        deltaL = [delta]
+        Routput = outputL[::-1]
+        Rweights = weights[::-1]
+        for i in range(1,len(Routput)-1):
+            output = Routput[i]
+            dList = list()
+            for j, item in enumerate(output):
+                d = item*(1-item)*np.array(deltaL[i-1]) @ Rweights[i-1][:,j]
+                dList.append(d)
+            deltaL.append(dList)
+        # print(dList)
+        return deltaL[::-1]
 
     def score(self, X, y):
         """ Return accuracy of model on a given dataset. Must implement own score function.

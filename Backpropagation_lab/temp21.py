@@ -1,3 +1,4 @@
+# from test import Rweights
 import numpy as np  
 
 def crate_weights(network):
@@ -42,7 +43,7 @@ def calculate_dW(lr:int, output:np.array, delta:list):
     for d in delta:
         dW.append(np.array(np.append(output,1))*d)
     dW = np.array(dW)*lr
-    print(dW)
+    # print(dW)
     return dW
 ###############################################
 
@@ -59,16 +60,35 @@ dW = calculate_dW(1,opList[-2], delta1)
 #######################################
 
 def delta_list(outputList, deltaList, weights):
+    # deltaList = np.array(deltaList)
     Routput = outputList[::-1]
     Rweights = weights[::-1]
-    for i in range(1,len(Routput)):
-        output = outputList[i]
+    for i in range(1,len(Routput)-1):
+        output = Routput[i]
         dList = list()
         for j,item in enumerate(output):
             d = Routput[i][j]*(1-Routput[i][j])*(np.array(deltaList[i-1])@Rweights[i-1][:,j])
             dList.append(d)
         print(dList)
     return dList
+
+def delta_full_list(outputL, delta, weights):
+    deltaL = [delta]
+    Routput = outputL[::-1]
+    Rweights = weights[::-1]
+    for i in range(1,len(Routput)-1):
+        output = Routput[i]
+        dList = list()
+        for j, item in enumerate(output):
+            d = item*(1-item)*np.array(deltaL[i-1]) @ Rweights[i-1][:,j]
+            dList.append(d)
+        deltaL.append(dList)
+    # print(dList)
+    return deltaL[::-1]
+
+
+dList = delta_full_list(opList, delta1, weights)
+print(dList)
 
 
 
