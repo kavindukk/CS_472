@@ -1,3 +1,4 @@
+from numpy.core.defchararray import count
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.neural_network import MLPClassifier
 import numpy as np
@@ -40,6 +41,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         # self.weights = self.initialize_weights(X.shape[1],y.shape[1], initial_weights) if not initial_weights else initial_weights
         Xdim = self.get_dim(X)
         Ydim = self.get_dim(y)
+        # Ydim = 2 if self.get_dim(y)==1 else self.get_dim(y)
         self.weights = self.initialize_weights(Xdim,Ydim, initial_weights) 
         self.initialize_delta_weights()
         # self.X = X
@@ -49,15 +51,43 @@ class MLP(BaseEstimator,ClassifierMixin):
             self.epoch(X,y)
         return self
 
-    def predict(self, X):
-        """ Predict all classes for a dataset X
+    def score(self, X, y):
+        """ Return accuracy of model on a given dataset. Must implement own score function.
+
         Args:
-            X (array-like): A 2D numpy array with the training data, excluding targets
+            X (array-like): A 2D numpy array with data, excluding targets
+            y (array-like): A 2D numpy array with targets
+
         Returns:
-            array, shape (n_samples,)
-                Predicted target values per element in X.
+            score : float
+                Mean accuracy of self.predict(X) wrt. y.
         """
-        pass
+        outputsOrIndexes = self.predict(X, y.ndim)
+        accuracyCount = 0
+        if y.ndim == 1:
+            for output, target in zip(outputsOrIndexes, y):
+                if output == target: accuracyCount = accuracyCount + 1
+        else:
+            for index_, target in zip(outputsOrIndexes, y):
+                if target[index_] == 1 : accuracyCount = accuracyCount + 1
+        
+        return accuracyCount/X.shape[0]
+
+    def predict(self, X, outputDimension):
+        if outputDimension==1: #perceptron Logic
+            opVector = []
+            for x_ in X:
+                net, _ = self.forward_pass(x_)
+                op = 1 if net>0 else 0
+                opVector.append(op)
+            return opVector
+        else:
+            indexes = []
+            for x_ in X: #Multi-output classification
+                op, _ = self.forward_pass(x_)
+                index = op.index(max(op))
+                indexes.append(index)
+            return indexes
 
     def epoch(self, X, y):        
         if self.shuffle == True:
@@ -165,20 +195,6 @@ class MLP(BaseEstimator,ClassifierMixin):
             deltaL.append(dList)
         # print(dList)
         return deltaL[::-1]
-
-    def score(self, X, y):
-        """ Return accuracy of model on a given dataset. Must implement own score function.
-
-        Args:
-            X (array-like): A 2D numpy array with data, excluding targets
-            y (array-like): A 2D numpy array with targets
-
-        Returns:
-            score : float
-                Mean accuracy of self.predict(X) wrt. y.
-        """
-
-        return 0
 
     def _shuffle_data(self, X, y):
         """ Shuffle the data! This _ prefix suggests that this method should only be called internally.
