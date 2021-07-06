@@ -1,4 +1,3 @@
-
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.neural_network import MLPClassifier
 import numpy as np
@@ -26,7 +25,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.DeltaW = None
 
 
-    def fit(self, X, y, initial_weights=None):
+    def fit(self, X, y, initial_weights=None, epochs=10):
         """ Fit the data; run the algorithm and adjust the weights to find a good solution
 
         Args:
@@ -38,13 +37,16 @@ class MLP(BaseEstimator,ClassifierMixin):
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
 
         """
-        self.weights = self.initialize_weights(2,2) if not initial_weights else initial_weights
+        # self.weights = self.initialize_weights(X.shape[1],y.shape[1], initial_weights) if not initial_weights else initial_weights
+        Xdim = self.get_dim(X)
+        Ydim = self.get_dim(y)
+        self.weights = self.initialize_weights(Xdim,Ydim, initial_weights) 
         self.initialize_delta_weights()
-        self.X = X
-        self.y = y
+        # self.X = X
+        # self.y = y
 
-        self.epoch()
-
+        for i in range(epochs):
+            self.epoch(X,y)
         return self
 
     def predict(self, X):
@@ -79,7 +81,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.DeltaW = dwList
 
 
-    def initialize_weights(self, noOfInputs, noOfOutputs):
+    def initialize_weights(self, noOfInputs, noOfOutputs, weights):
         """ Initialize weights for perceptron. Don't forget the bias!
 
         Returns:
@@ -87,11 +89,23 @@ class MLP(BaseEstimator,ClassifierMixin):
         """
         if self.hidden_layer_widths == None:
             self.network = [noOfInputs, 2*noOfInputs, noOfOutputs]
-            weigts = self.assign_weight_matrix()
+            weights = self.assign_weight_matrix(weights)
         else:
             
             self.network = [noOfInputs] + self.hidden_layer_widths + [noOfOutputs]
-            weights = self.assign_weight_matrix()
+            weights = self.assign_weight_matrix(weights)
+        return weights
+
+    def assign_weight_matrix(self, weight_):
+        weights = list()
+        for i in range(1,len(self.network)):
+            m = self.network[i]
+            n = self.network[i-1]+1
+            if not weight_:
+                weight = weight_*np.ones((m,n))
+            else:
+                weight = np.random.normal(loc=0, scale=np.sqrt(1), size=(m,n))
+            weights.append(weight)
         return weights
     
     def initialize_delta_weights(self):
@@ -100,16 +114,6 @@ class MLP(BaseEstimator,ClassifierMixin):
             dw = np.zeros_like(item)
             dWList.append(dw)
         self.DeltaW = dWList
-
-    def assign_weight_matrix(self):
-        weights = list()
-        for i in range(1,len(self.network)):
-            m = self.network[i]
-            n = self.network[i-1]+1
-            # weight = np.random.normal(loc=0, scale=np.sqrt(1), size=(m,n))            
-            weight = np.ones((m,n))            
-            weights.append(weight)
-        return weights
 
     def forward_pass(self,input_):
         x_ = np.append(input_, self.bias)
@@ -139,7 +143,9 @@ class MLP(BaseEstimator,ClassifierMixin):
         # print(dW)
         return dW
 
-    def delta_last_layer(self, target:np.array, result:list):
+    def delta_last_layer(self, target, result:list):
+        if type(target) == np.int32:
+            target = np.array([target])
         delta = list()
         for t,o in zip(target, result):
             dt = (t-o)*o*(1-o)
@@ -182,7 +188,13 @@ class MLP(BaseEstimator,ClassifierMixin):
         concat = np.append(X,y.reshape(len(y),1), axis=1)
         np.random.shuffle(concat)
         return concat[:, :-1], concat[:,-1]
- 
+
+    def get_dim(self, X:np.ndarray):
+        if X.ndim == 1 :
+            dimX = X.ndim
+        else:
+            dimX = X.shape[1]
+        return dimX 
 
     ### Not required by sk-learn but required by us for grading. Returns the weights.
     def get_weights(self):
