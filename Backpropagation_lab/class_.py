@@ -25,7 +25,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.initialize_delta_weights()
 
         if not epochs:
-            # xShuffled, yShuffled = self._shuffle_data(X,y)            
+            xShuffled, yShuffled = self._shuffle_data(X,y)            
             # xTrain, xValid, yTrain, yValid = self.split_data(xShuffled, yShuffled, percentage=validation_percentage)
             xTrain, xValid, yTrain, yValid = self.split_data(X, y, percentage=validation_percentage)
             accuracy = 0
@@ -180,7 +180,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         else:
             concat = np.append(X,y, axis=1)
             np.random.shuffle(concat)
-            return concat[:, :-y.shape[1]], concat[:,-y.shape[1]]
+            return concat[:, :-y.shape[1]], concat[:,-y.shape[1]:]
         
 
     def get_dim(self, X:np.ndarray):
