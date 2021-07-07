@@ -24,11 +24,13 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.weights = self.initialize_weights(Xdim,Ydim, initial_weights) 
         self.initialize_delta_weights()
 
-        if not epochs:            
+        if not epochs:
+            # xShuffled, yShuffled = self._shuffle_data(X,y)            
+            # xTrain, xValid, yTrain, yValid = self.split_data(xShuffled, yShuffled, percentage=validation_percentage)
             xTrain, xValid, yTrain, yValid = self.split_data(X, y, percentage=validation_percentage)
             accuracy = 0
             accuracyRepeatCount = 0
-            while accuracy< 0.85:
+            while accuracy< 0.95 or accuracyRepeatCount <10 :
                 self.epoch(xTrain,yTrain)
                 currentAccuracy = self.score(xValid,yValid)
                 if np.abs(accuracy-currentAccuracy) <= 0.02 : accuracyRepeatCount = accuracyRepeatCount + 1
@@ -62,6 +64,8 @@ class MLP(BaseEstimator,ClassifierMixin):
             indexes = []
             for x_ in X: #Multi-output classification
                 op, _ = self.forward_pass(x_)
+                op = op.tolist()
+                # index = op.index(max(op))
                 index = op.index(max(op))
                 indexes.append(index)
             return indexes
@@ -103,9 +107,9 @@ class MLP(BaseEstimator,ClassifierMixin):
         for i in range(1,len(self.network)):
             m = self.network[i]
             n = self.network[i-1]+1
-            if not weight_:
+            if weight_==0 or weight_:
                 weight = weight_*np.ones((m,n))
-            else:
+            elif weight_==None:
                 weight = np.random.normal(loc=0, scale=np.sqrt(1), size=(m,n))
             weights.append(weight)
         return weights
@@ -169,9 +173,15 @@ class MLP(BaseEstimator,ClassifierMixin):
         return deltaL[::-1]
 
     def _shuffle_data(self, X, y):
-        concat = np.append(X,y.reshape(len(y),1), axis=1)
-        np.random.shuffle(concat)
-        return concat[:, :-1], concat[:,-1]
+        if y.ndim == 1:
+            concat = np.append(X,y.reshape(len(y),1), axis=1)
+            np.random.shuffle(concat)   
+            return concat[:, :-1], concat[:,-1]
+        else:
+            concat = np.append(X,y, axis=1)
+            np.random.shuffle(concat)
+            return concat[:, :-y.shape[1]], concat[:,-y.shape[1]]
+        
 
     def get_dim(self, X:np.ndarray):
         if X.ndim == 1 :
