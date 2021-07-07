@@ -26,11 +26,11 @@ class MLP(BaseEstimator,ClassifierMixin):
 
         if not epochs:
             xShuffled, yShuffled = self._shuffle_data(X,y)            
-            # xTrain, xValid, yTrain, yValid = self.split_data(xShuffled, yShuffled, percentage=validation_percentage)
-            xTrain, xValid, yTrain, yValid = self.split_data(X, y, percentage=validation_percentage)
+            xTrain, xValid, yTrain, yValid = self.split_data(xShuffled, yShuffled, percentage=validation_percentage)
+            # xTrain, xValid, yTrain, yValid = self.split_data(X, y, percentage=validation_percentage)
             accuracy = 0
             accuracyRepeatCount = 0
-            while accuracy< 0.95 or accuracyRepeatCount <10 :
+            while accuracy< 0.95 and accuracyRepeatCount <50 :
                 self.epoch(xTrain,yTrain)
                 currentAccuracy = self.score(xValid,yValid)
                 if np.abs(accuracy-currentAccuracy) <= 0.02 : accuracyRepeatCount = accuracyRepeatCount + 1
