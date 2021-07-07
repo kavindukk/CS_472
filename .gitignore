@@ -11,6 +11,8 @@ Backpropagation_lab/__pycache__/
 # Backpropagation_lab/class_check.py
 Backpropagation_lab/split.py
 Backpropagation_lab/iris_trim.arff
-
-
-
+Backpropagation_lab/Q4.py
+Backpropagation_lab/classCheck2.py
+Backpropagation_lab/classCheck3.py
+Backpropagation_lab/classCheck4.py
+Backpropagation_lab/vowel_trim.arff

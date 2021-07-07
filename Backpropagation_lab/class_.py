@@ -32,12 +32,12 @@ class MLP(BaseEstimator,ClassifierMixin):
             # xTrain, xValid, yTrain, yValid = self.split_data(X, y, percentage=validation_percentage)
             accuracy = 0
             accuracyRepeatCount = 0
-            while accuracy< 0.95 and accuracyRepeatCount <50 :
+            while accuracy< 0.95 and accuracyRepeatCount <10 :
                 mseOfEpoch = self.epoch(xTrain,yTrain)
                 self.mse.append(mseOfEpoch)
                 currentAccuracy = self.score(xValid,yValid)
                 self.accuracyList.append(currentAccuracy)
-                if np.abs(accuracy-currentAccuracy) <= 0.02 : accuracyRepeatCount = accuracyRepeatCount + 1
+                accuracyRepeatCount = accuracyRepeatCount + 1 if np.abs(accuracy-currentAccuracy) <= 0.02 else 0 
                 accuracy = currentAccuracy
         else:
             for i in range(epochs):
