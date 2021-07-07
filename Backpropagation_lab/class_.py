@@ -14,6 +14,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.shuffle = shuffle
         self.bias = bias
         self.DeltaW = None
+        self.mse = []
 
 
     def fit(self, X, y, initial_weights=None, epochs=10, validation_percentage=.15):
@@ -31,13 +32,15 @@ class MLP(BaseEstimator,ClassifierMixin):
             accuracy = 0
             accuracyRepeatCount = 0
             while accuracy< 0.95 and accuracyRepeatCount <50 :
-                self.epoch(xTrain,yTrain)
+                mseOfEpoch = self.epoch(xTrain,yTrain)
+                self.mse.append(mseOfEpoch)
                 currentAccuracy = self.score(xValid,yValid)
                 if np.abs(accuracy-currentAccuracy) <= 0.02 : accuracyRepeatCount = accuracyRepeatCount + 1
                 accuracy = currentAccuracy
         else:
             for i in range(epochs):
-                self.epoch(X,y)
+                mseOfEpoch = self.epoch(X,y)
+                self.mse.append(mseOfEpoch)
         return self
 
     def score(self, X, y):
@@ -70,17 +73,22 @@ class MLP(BaseEstimator,ClassifierMixin):
                 indexes.append(index)
             return indexes
 
-    def epoch(self, X, y):        
+    def epoch(self, X, y): 
+        mse = 0       
         if self.shuffle == True:
             X, y = self._shuffle_data(X,y)
         
         for i in range(X.shape[0]): 
-            self.process_a_data_instance_of_an_epoch(X[i], y[i])
+            mseDataPoint =  self.process_a_data_instance_of_an_epoch(X[i], y[i])
+            mse = mse + mseDataPoint
+        return mse/X.shape[0]
 
     def process_a_data_instance_of_an_epoch(self, X, y):
         op, opList = self.forward_pass(X)
         deltaLast = self.delta_last_layer(y,op)
         deltaList = self.delta_full_list(opList, deltaLast)
+
+        mseDataPoint = np.square(op-y).mean()
         
         dwList = list()
         for delta, op in zip(deltaList, opList[:-1]):
@@ -90,6 +98,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         for i in range(len(self.weights)):
             self.weights[i] = self.weights[i] + dwList[i] + self.momentum*self.DeltaW[i]
         self.DeltaW = dwList
+        return mseDataPoint
 
 
     def initialize_weights(self, noOfInputs, noOfOutputs, weights):
