@@ -15,6 +15,7 @@ class MLP(BaseEstimator,ClassifierMixin):
         self.bias = bias
         self.DeltaW = None
         self.mse = []
+        self.accuracyList = []
 
 
     def fit(self, X, y, initial_weights=None, epochs=10, validation_percentage=.15):
@@ -35,6 +36,7 @@ class MLP(BaseEstimator,ClassifierMixin):
                 mseOfEpoch = self.epoch(xTrain,yTrain)
                 self.mse.append(mseOfEpoch)
                 currentAccuracy = self.score(xValid,yValid)
+                self.accuracyList.append(currentAccuracy)
                 if np.abs(accuracy-currentAccuracy) <= 0.02 : accuracyRepeatCount = accuracyRepeatCount + 1
                 accuracy = currentAccuracy
         else:
