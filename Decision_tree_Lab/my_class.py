@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.core.defchararray import count
 import pandas as pd
 import math as m
 
@@ -120,6 +121,14 @@ class decision_tree_ID3_classifier:
             currentNode = currentNode.childs[featureValue]
         return currentNode
 
+    def score(self, X, y):
+        count = 0
+        for x,y_ in zip(X,y):
+            yHat = self.predict(x)
+            if yHat == y_:
+                count += 1
+        return count/len(y)
+
 
 
 
@@ -133,6 +142,8 @@ id3 = decision_tree_ID3_classifier(X,y,featureLabels)
 
 id3.id3()
 node = id3.node
-x = np.array(['Y','Deep','N'])
-prediction = id3.predict(x)
+# x = np.array(['Y','Deep','N'])
+# prediction = id3.predict(x)
+y_new = np.array(['B', 'B', 'B', 'B', 'G', 'Gr', 'G', 'G', 'B'])
+score  = id3.score(X,y_new)
 print("dsldjsldj")
