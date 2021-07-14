@@ -15,25 +15,31 @@ X = np.array([['Y','Thin','N'],
                 ['N','Thin','N']])
 featureLabels = np.array(['Meat', 'Crust', 'Veg'])
 
-class Node:
-    def __init__(self):
-        self.value = None
-        self.next = None
-        self.childs = None
+# class Node:
+#     def __init__(self):
+#         self.value = None
+#         self.next = None
+#         self.childs = None
 
-    def __repr__(self) -> str:
-        str_ = "branch: " + self.value +" "
-        str_ += "next node: " + self.next.value + " "
-        # str_ += "childs: "
-        # for child in self.childs:
-        #     str_ += child.value + " "
-        return str_
+#     def __repr__(self) -> str:
+#         str_ = "branch: " + self.value +" "
+#         str_ += "next node: " + self.next.value + " "
+#         # str_ += "childs: "
+#         # for child in self.childs:
+#         #     str_ += child.value + " "
+#         return str_
+
+class Node:
+    def __init__(self) -> None:
+        self.name = None
+        self.childs = {}
 
 class decision_tree_ID3_classifier:
-    def __init__(self, X, y, labels) -> None:
+    def __init__(self, X, y, feature_names=None) -> None:
         self.X = X
         self.y = y
-        self.feature_names = labels
+        fType = type(feature_names)
+        self.feature_names = ['feature_'+str(i) for i in range(X.shape[1])] if not (fType==list or fType==np.ndarray) else list(feature_names)
         self.node = Node()
 
     def find_information_gain(self, X_ids):
@@ -82,38 +88,37 @@ class decision_tree_ID3_classifier:
     def id3(self):
         xIds = [x for x in range(self.X.shape[0])]
         featureIds = [x for x in range(self.X.shape[1])]
-        self.node = self._id3_recv(xIds, featureIds, self.node)
+        self.node = self.id3_recursive(xIds, featureIds, self.node)
 
-    def _id3_recv(self, x_ids, feature_ids, node):
+    def id3_recursive(self, x_ids, feature_ids, node):
         if not node:
             node = Node()
         labels_in_features = [self.y[x] for x in x_ids]
-        if len(set(labels_in_features)) == 1:
-            node.value = self.y[x_ids[0]]
-            return node
+        if len(set(labels_in_features)) == 1:           
+            return  self.y[x_ids[0]]
 
         if len(feature_ids) == 0:
-            node.value = max(set(labels_in_features), key=labels_in_features.count)  
-            return node
-       
+            return max(set(labels_in_features), key=labels_in_features.count)             
+        
         best_feature_id, best_feature_name  = self.find_max_information_gain_feature(x_ids, feature_ids)
-        node.value = best_feature_name
-        node.childs = []   
+        node.name = best_feature_name
         feature_values = list(set([self.X[x][best_feature_id] for x in x_ids]))
         for value in feature_values:
-            child = Node()
-            child.value = value  
-            node.childs.append(child)  
-            child_x_ids = [x for x in x_ids if self.X[x][best_feature_id] == value]
-            if not child_x_ids:
-                child.next = max(set(labels_in_features), key=labels_in_features.count)
-                print('')
-            else:
-                if feature_ids and best_feature_id in feature_ids:
-                    to_remove = feature_ids.index(best_feature_id)
-                    feature_ids.pop(to_remove) 
-                child.next = self._id3_recv(child_x_ids, feature_ids, child.next)
+            x_value_ids = [x for x in x_ids if self.X[x][best_feature_id] == value ]
+            value_feature_ids = list(feature_ids)
+            to_remove = value_feature_ids.index(best_feature_id)
+            value_feature_ids.pop(to_remove)
+            node.childs[value] = self.id3_recursive(x_value_ids,value_feature_ids, node=None)
         return node
+
+    def predict(self, x:np.array):
+        currentNode = self.node
+        while isinstance(currentNode, Node):
+            nodeName = currentNode.name
+            featureIndex = self.feature_names.index(nodeName)
+            featureValue = x[featureIndex]
+            currentNode = currentNode.childs[featureValue]
+        return currentNode
 
 
 
@@ -128,4 +133,6 @@ id3 = decision_tree_ID3_classifier(X,y,featureLabels)
 
 id3.id3()
 node = id3.node
+x = np.array(['Y','Deep','N'])
+prediction = id3.predict(x)
 print("dsldjsldj")
