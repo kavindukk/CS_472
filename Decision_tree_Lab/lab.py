@@ -102,16 +102,18 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         while isinstance(currentNode, Node):
             nodeName = currentNode.name
             featureIndex = self.feature_names.index(nodeName)
-            featureValue = x[featureIndex]
-            currentNode = currentNode.childs[featureValue]
+            featureValue = x[featureIndex]  
+            if featureValue in currentNode.childs:
+                currentNode = currentNode.childs[featureValue]
+            else:
+                return 0
         return currentNode
-
 
     def score(self, X, y):
         count = 0
         for x,y_ in zip(X,y):
             yHat = self.predict(x)
-            print('yHat: '+str(yHat)+' y: '+str(y_))
+            # print('yHat: '+str(yHat)+' y: '+str(y_))
             if yHat == y_:
                 count += 1
         return count/len(y)
@@ -127,28 +129,28 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
 # y_test = df_test.iloc[:,-1].to_numpy().astype(str)
 
 
-data_train = arff.loadarff('zoo.arff')
-df_train = pd.DataFrame(data_train[0])
-X_train = df_train.iloc[:,:-1].to_numpy().astype(str)
-y_train = df_train.iloc[:,-1].to_numpy().astype(str)
+# data_train = arff.loadarff('zoo.arff')
+# df_train = pd.DataFrame(data_train[0])
+# X_train = df_train.iloc[:,:-1].to_numpy().astype(str)
+# y_train = df_train.iloc[:,-1].to_numpy().astype(str)
 
-data_test = arff.loadarff('zoo_test.arff')
-df_test = pd.DataFrame(data_test[0])
-X_test = df_test.iloc[:,:-1].to_numpy().astype(str)
-y_test = df_test.iloc[:,-1].to_numpy().astype(str)
+# data_test = arff.loadarff('zoo_test.arff')
+# df_test = pd.DataFrame(data_test[0])
+# X_test = df_test.iloc[:,:-1].to_numpy().astype(str)
+# y_test = df_test.iloc[:,-1].to_numpy().astype(str)
 
-id3 = DTClassifier()
-self_ = id3.fit(X_train, y_train)
+# id3 = DTClassifier()
+# self_ = id3.fit(X_train, y_train)
 # print(self_.infoGain)
 # score = self_.score(X_test,y_test)
 # print(score)
 
-score = self_.score(X_test,y_test)
-print('####################')
-print('Accuracy: '+str(score))                                         
+# score = self_.score(X_test,y_test)
+# print('####################')
+# print('Accuracy: '+str(score))                                         
                                               
 
 # Print the information gain of every split you make.
-print('####################')
-print("info gain: ")
-print(self_.infoGain)
+# print('####################')
+# print("info gain: ")
+# print(self_.infoGain)
