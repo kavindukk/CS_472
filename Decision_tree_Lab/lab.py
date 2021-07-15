@@ -14,7 +14,8 @@ class Node:
 class DTClassifier(BaseEstimator,ClassifierMixin):
 
     def __init__(self,counts=None):
-        self.node = Node()        
+        self.node = Node()  
+        self.infoGain = []      
 
     def fit(self, X, y, feature_names=None):
         self.X = X
@@ -63,10 +64,11 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
         for id_ in feature_ids:
             entropy = self.find_entropy_of_a_feature(X_ids,id_)
             featureInfoGain = infoGain - entropy
-            print("id"+str(id_)+" "+str(featureInfoGain))
+            # print("id"+str(id_)+" "+str(featureInfoGain))
             if featureInfoGain > maxInfoGain:
                 maxInfoGain = featureInfoGain
                 maxInfoGainFeature = id_
+        self.infoGain.append(maxInfoGain)
         return maxInfoGainFeature, self.feature_names[maxInfoGainFeature]
 
     def id3(self):
@@ -125,5 +127,17 @@ X_test = df_test.iloc[:,:-1].to_numpy().astype(str)
 y_test = df_test.iloc[:,-1].to_numpy().astype(str)
 
 id3 = DTClassifier()
-score = id3.fit(X_train, y_train).score(X_test,y_test)
-print(score)
+self_ = id3.fit(X_train, y_train)
+# print(self_.infoGain)
+# score = self_.score(X_test,y_test)
+# print(score)
+
+score = self_.score(X_test,y_test)
+print('####################')
+print('Accuracy: '+str(score))                                         
+                                              
+
+# Print the information gain of every split you make.
+print('####################')
+print("info gain: ")
+print(self_.infoGain)
