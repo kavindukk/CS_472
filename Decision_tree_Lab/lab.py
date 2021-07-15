@@ -59,7 +59,7 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
 
     def find_max_information_gain_feature(self, X_ids, feature_ids):
         infoGain = self.find_information_gain(X_ids)
-        maxInfoGain = 0
+        maxInfoGain = -1e10
         maxInfoGainFeature = -1
         for id_ in feature_ids:
             entropy = self.find_entropy_of_a_feature(X_ids,id_)
@@ -116,12 +116,23 @@ class DTClassifier(BaseEstimator,ClassifierMixin):
                 count += 1
         return count/len(y)
 
-data_train = arff.loadarff('debug_train.arff')
+# data_train = arff.loadarff('debug_train.arff')
+# df_train = pd.DataFrame(data_train[0])
+# X_train = df_train.iloc[:,:-1].to_numpy().astype(str)
+# y_train = df_train.iloc[:,-1].to_numpy().astype(str)
+
+# data_test = arff.loadarff('lenses_test.arff')
+# df_test = pd.DataFrame(data_test[0])
+# X_test = df_test.iloc[:,:-1].to_numpy().astype(str)
+# y_test = df_test.iloc[:,-1].to_numpy().astype(str)
+
+
+data_train = arff.loadarff('zoo.arff')
 df_train = pd.DataFrame(data_train[0])
 X_train = df_train.iloc[:,:-1].to_numpy().astype(str)
 y_train = df_train.iloc[:,-1].to_numpy().astype(str)
 
-data_test = arff.loadarff('lenses_test.arff')
+data_test = arff.loadarff('zoo_test.arff')
 df_test = pd.DataFrame(data_test[0])
 X_test = df_test.iloc[:,:-1].to_numpy().astype(str)
 y_test = df_test.iloc[:,-1].to_numpy().astype(str)
