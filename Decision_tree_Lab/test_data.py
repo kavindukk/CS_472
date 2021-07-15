@@ -35,22 +35,23 @@ from lab import DTClassifier
 # print(X)
 # print(y)
 # print(fatures)
-data_ = list(arf.load('cars.arff'))
-data_ = np.asarray(data_, dtype=str)
-df = pd.DataFrame(data_)
-df.fillna(method='ffill', inplace=True)
-df.fillna(method='bfill', inplace=True)
-data = df.to_numpy().astype(str)
-
-# data_ = arff.loadarff('voting_with_missing.arff')
-# df = pd.DataFrame(data_[0])
-# features = df.columns.values
-# data = df.to_numpy().astype(str)
-# df = pd.DataFrame(data, columns=features)
-# df = df.replace('?', np.nan)
+# data_ = list(arf.load('cars.arff'))
+# data_ = np.asarray(data_, dtype=str)
+# df = pd.DataFrame(data_)
 # df.fillna(method='ffill', inplace=True)
 # df.fillna(method='bfill', inplace=True)
+# data = df.to_numpy().astype(str)
 
+data_ = arff.loadarff('voting_with_missing.arff')
+df = pd.DataFrame(data_[0])
+features = df.columns.values
+data = df.to_numpy().astype(str)
+df = pd.DataFrame(data, columns=features)
+df = df.replace('?', np.nan)
+df.fillna(method='ffill', inplace=True)
+df.fillna(method='bfill', inplace=True)
+
+data_ = df.to_numpy().astype(str)
 # A = df.isnull().any(axis=1)
 # B = [x for x in A if x == True]
 
