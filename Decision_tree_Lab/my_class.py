@@ -3,18 +3,18 @@ from numpy.core.defchararray import count
 import pandas as pd
 import math as m
 
-df = pd.read_csv("play_tennis.csv")
-y = np.array(['Gr', 'B', 'G', 'Gr', 'G', 'Gr', 'G', 'G', 'B'])
-X = np.array([['Y','Thin','N'],
-                ['N','Deep','N'],
-                ['N','Stuffed','Y'],
-                ['Y','Stuffed','Y'],
-                ['Y','Deep','N'],
-                ['Y','Deep','Y'],
-                ['N','Thin','Y'],
-                ['Y','Deep','N'],
-                ['N','Thin','N']])
-featureLabels = np.array(['Meat', 'Crust', 'Veg'])
+# df = pd.read_csv("play_tennis.csv")
+# y = np.array(['Gr', 'B', 'G', 'Gr', 'G', 'Gr', 'G', 'G', 'B'])
+# X = np.array([['Y','Thin','N'],
+#                 ['N','Deep','N'],
+#                 ['N','Stuffed','Y'],
+#                 ['Y','Stuffed','Y'],
+#                 ['Y','Deep','N'],
+#                 ['Y','Deep','Y'],
+#                 ['N','Thin','Y'],
+#                 ['Y','Deep','N'],
+#                 ['N','Thin','N']])
+# featureLabels = np.array(['Meat', 'Crust', 'Veg'])
 
 # class Node:
 #     def __init__(self):
@@ -81,6 +81,7 @@ class decision_tree_ID3_classifier:
         for id_ in feature_ids:
             entropy = self.find_entropy_of_a_feature(X_ids,id_)
             featureInfoGain = infoGain - entropy
+            print("id"+str(id_)+" "+str(featureInfoGain))
             if featureInfoGain > maxInfoGain:
                 maxInfoGain = featureInfoGain
                 maxInfoGainFeature = id_
@@ -125,6 +126,7 @@ class decision_tree_ID3_classifier:
         count = 0
         for x,y_ in zip(X,y):
             yHat = self.predict(x)
+            print('yHat: '+str(yHat)+' y: '+str(y_))
             if yHat == y_:
                 count += 1
         return count/len(y)
@@ -133,17 +135,17 @@ class decision_tree_ID3_classifier:
 
 
 
-id3 = decision_tree_ID3_classifier(X,y,featureLabels)
+# id3 = decision_tree_ID3_classifier(X,y,featureLabels)
 # xIDs = [x for x in range(X.shape[0])]
 # yIDs = [y for y in range(X.shape[1])]
 # infoGain = id3.find_information_gain(xIDs)
 # entropyMeat = id3.find_entropy_of_a_feature(xIDs,0)
 # maxFeature, maxFeatureID = id3.find_max_information_gain_feature(xIDs,yIDs)
 
-id3.id3()
-node = id3.node
+# id3.id3()
+# node = id3.node
 # x = np.array(['Y','Deep','N'])
 # prediction = id3.predict(x)
-y_new = np.array(['B', 'B', 'B', 'B', 'G', 'Gr', 'G', 'G', 'B'])
-score  = id3.score(X,y_new)
-print("dsldjsldj")
+# y_new = np.array(['B', 'B', 'B', 'B', 'G', 'Gr', 'G', 'G', 'B'])
+# score  = id3.score(X,y_new)
+# print("dsldjsldj")

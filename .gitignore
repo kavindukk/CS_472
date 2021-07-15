@@ -20,3 +20,11 @@ Backpropagation_lab/vowel_trim.arff
 # Descision Tree Lab
 Decision_tree_Lab/example.py
 Decision_tree_Lab/test.py
+Decision_tree_Lab/__pycache__
+Decision_tree_Lab/other
+Decision_tree_Lab/debug_test.arff
+Decision_tree_Lab/play_tennis.csv
+
+
+
+
