@@ -15,6 +15,7 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         """
         self.weight_type = weight_type
         self.K = K
+        self.hot_encode = {}
 
     def fit(self, data: pd.DataFrame , labels: pd.DataFrame, columntype=[]):
         """ Fit the data; run the algorithm (for this lab really just saves the data :D)
@@ -26,18 +27,21 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         """
         self.X = data
         self.y = labels
-        self.columntype = columntype #Note This won't be needed until part 5
-        if len(data.columms)==len(columntype):
-            for i in range(len(columntype)):
-                if columntype[i] == 'catagorical':                    
-                    self.hot_encode(i)
+        self.columntype = {col_name: col_type for col_name, col_type in zip(data.columns.values, columntype)} #Note This won't be needed until part 5
+        # self.column_names = list(data.columns.values)
+
+        # if len(list(data.columns))==len(columntype):
+        for key, value in self.columntype.items():
+            if value == 'catagorical':                    
+                self.hot_encode(key)
         self.X = self.X.to_numpy()
         self.y = self.y.to_numpy()
         return self
 
-    def hot_encode(self, index):
-        unique_values = self.X.iloc[:,1].unique()
-        self.X.iloc[:,index]=self.X.iloc[:,index].replace(unique_values, [x for x in range(len(unique_values))])
+    def hot_encode(self, column_name):
+        unique_values = self.X[column_name].unique()
+        self.X[column_name]=self.X[column_name].replace(unique_values, [x for x in range(len(unique_values))])
+        self.hot_encode[column_name] = {value: i for i,value in enumerate(unique_values)}
     
     def predict(self, data):
         """ Predict all classes for a dataset X
@@ -47,23 +51,34 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
             array, shape (n_samples,)
                 Predicted target values per element in X.
         """
-        for i in range(len(data)):
-            if self.columntype[i] == 'catagorical':
-                data[i] = list(self.X.iloc[:,i].unique()).index(data[i])
-
         weghtList = []
-        for x in self.X.shape:
+        distanceList = []
+        for x in self.X:
             distance = np.linalg.norm(data-x)
             if self.weight_type == 'inverse_distance':
+                distanceList.append(distance)
                 weghtList.append(1/distance**2)
             elif self.weight_type == 'None':
-                weghtList.append(distance)
+                distanceList.append(distance)
         
-        nearestLabels = sorted(weghtList)[:self.K]
-        nearestIndexes = weghtList.index(nearestLabels)
+        nearestDistances = sorted(distanceList)[:self.K] 
+        nearestIndexes = [distanceList.index(distance) for distance in nearestDistances]
         closestLabels = [self.y[i] for i in nearestIndexes]
-        prediction = max(closestLabels, key=closestLabels.count)
-        return prediction
+        if self.weight_type=='None':
+            prediction = max(closestLabels, key=closestLabels.count)
+            return prediction
+        elif self.weight_type=='inverse_distance':
+            closestWeights = [weghtList[i] for i in nearestIndexes]
+            label_values = []
+            for label in list(set(closestLabels)):
+                indexes = [i for i in range(len(closestLabels)) if closestLabels[i]==label]
+                weights = [closestWeights[i] for i in indexes]
+                distances = [nearestDistances[i] for i in indexes]
+                value_for_label = np.array(weights) @ np.array(distances)
+                label_values.append(value_for_label)
+            index = label_values.index(max(label_values))
+            prediction = list(set(closestLabels))[index]
+            return prediction            
 
     #Returns the Mean score given input data and labels
     def score(self, X:pd.DataFrame, y:pd.DataFrame):
@@ -75,9 +90,15 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
             score : float
                 Mean accuracy of self.predict(X) wrt. y.
         """
+        for key, value in self.columntype.items():
+             if value == 'catagorical':
+                 encode_dict = self.columntype[key]
+                 X[key] = X[key].replace(list(encode_dict.keys()), list(encode_dict.values()))
+        X = X.to_numpy()
+        y = y.to_numpy()
         count_ = 0
         for x_,y_ in zip(X,y):
             prediction = self.predict(x_)
             if prediction==y_:
                 count_+=1
-        return count_/X.shpe[0]
+        return count_/X.shape[0]

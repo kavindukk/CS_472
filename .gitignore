@@ -32,7 +32,8 @@ Decision_tree_Lab/diabetes.png
 Decision_tree_Lab/sk_learn_3.py
 
 KNN_lab/data.csv
-KNN_lab/test.py
+KNN_lab/__pycache__
+# KNN_lab/test.py
 
 
 
