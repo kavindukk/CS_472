@@ -36,19 +36,17 @@ class HACClustering(BaseEstimator,ClassifierMixin):
         while len(self.clusters_)>self.k:
             i,j = self.find_closest_clusters()
             self.group_clusters(i,j)
-        centroids = self.find_centroids()
+        self.centroids = self.find_centroids()
         return self
     
-    def print_clusters(self):
-        """
-            Used for grading.
-            print("Num clusters: {:d}\n".format(k))
-            print("Silhouette score: {:.4f}\n\n".format(silhouette_score))
-            for each cluster and centroid:
-                print(np.array2string(centroid,precision=4,separator=","))
-                print("{:d}\n".format(size of cluster))
-        """
-        pass
+    def print_clusters(self):    
+        # Used for grading.
+        print("Num clusters: {:d}\n".format(self.k))
+        print("Silhouette score: {:.4f}\n\n".format(self.calculate_silhouette_score()))
+        for i,centroid in  enumerate(self.centroids):
+            print(np.array2string(centroid,precision=4,separator=","))
+            print("{:d}\n".format(len(self.clusters_[i]) if type(self.clusters_[i])==list else 1))
+
 
     def group_clusters(self, idx1, idx2):
         self.clusters_[idx1] = self.clusters_[idx1] if type(self.clusters_[idx1])==list else [self.clusters_[idx1]] 
@@ -131,7 +129,13 @@ class HACClustering(BaseEstimator,ClassifierMixin):
     def find_centroids(self):
         centroids = []
         for cluster in self.clusters_:
-            data = self.X[tuple(cluster) if type(cluster)==list else cluster,:]
-            centroid = np.mean(data, axis=0)
+            data = self.X[tuple(cluster) if type(cluster)==list else cluster,:]            
+            centroid = np.mean(data, axis=0) if data.ndim>1 else data
             centroids.append(centroid)
         return centroids
+
+    def calculate_silhouette_score(self):
+        clusterer = AgglomerativeClustering(n_clusters=self.k, linkage=self.link_type).fit(self.X)
+        cluster_labels = clusterer.labels_
+        score = silhouette_score(self.X, cluster_labels)
+        return score
