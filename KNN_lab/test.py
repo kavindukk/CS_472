@@ -26,5 +26,16 @@ df_test = pd.DataFrame(data[0])
 # print(df_test.columns.values[0])
 X_test = df_test.iloc[:,:-1]
 y_test = df_test.iloc[:,-1].str.decode('UTF-8')
+# KNNobj = KNNClassifier(weight_type='None')
 KNNobj = KNNClassifier()
-KNNobj.fit(X_train,y_train, columntype).score(X_test, y_test)
+accuracy = KNNobj.fit(X_train,y_train, columntype).score(X_test, y_test)
+print(accuracy)
+
+# A = np.arange(9).reshape(3,3)
+# A = A.astype('float64')
+# for i in range(A.shape[1]):
+#     # A_ = np.copy(A)
+#     # temp = (A[:,i] - min(A[:,i]))/(max(A[:,i])-min(A[:,i])) - 1
+#     A[:,i] = (A[:,i] - min(A[:,i]))/(max(A[:,i])-min(A[:,i])) - 1
+
+# print(A)

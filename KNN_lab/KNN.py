@@ -1,5 +1,6 @@
 
 from numpy.core.defchararray import count
+from numpy.lib.function_base import append
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 import numpy as np
@@ -7,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 class KNNClassifier(BaseEstimator,ClassifierMixin):
-    def __init__(self,  weight_type='inverse_distance', K=3): ## add parameters here
+    def __init__(self,  weight_type='inverse_distance',normalize=False, K=3): ## add parameters here
         """
         Args:
             columntype for each column tells you if continues[real] or if nominal[categoritcal].
@@ -16,6 +17,9 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         self.weight_type = weight_type
         self.K = K
         self.hot_encode = {}
+        self.normalize_ = normalize
+
+        self.yHat = []
 
     def fit(self, data: pd.DataFrame , labels: pd.DataFrame, columntype=[]):
         """ Fit the data; run the algorithm (for this lab really just saves the data :D)
@@ -33,9 +37,14 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         # if len(list(data.columns))==len(columntype):
         for key, value in self.columntype.items():
             if value == 'catagorical':                    
-                self.hot_encode(key)
+                # self.hot_encode(key)
+                unique_values = self.X[key].unique()
+                self.X[key]=self.X[key].replace(unique_values, [x for x in range(len(unique_values))])
+                self.hot_encode[key] = {value: i for i,value in enumerate(unique_values)}
         self.X = self.X.to_numpy()
         self.y = self.y.to_numpy()
+        if self.normalize_==True:
+            self.X = self._normalize_(self.X)
         return self
 
     def hot_encode(self, column_name):
@@ -53,12 +62,17 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         """
         weghtList = []
         distanceList = []
-        for x in self.X:
-            distance = np.linalg.norm(data-x)
-            if self.weight_type == 'inverse_distance':
+        if self.weight_type == 'inverse_distance':
+            for x in self.X:
+                distance = np.linalg.norm(data-x)
                 distanceList.append(distance)
-                weghtList.append(1/distance**2)
-            elif self.weight_type == 'None':
+                if distance == 0:
+                    weghtList.append(np.inf)
+                else:
+                    weghtList.append(1/distance**2)
+        elif self.weight_type == 'None':
+            for x in self.X:
+                distance = np.linalg.norm(data-x)
                 distanceList.append(distance)
         
         nearestDistances = sorted(distanceList)[:self.K] 
@@ -66,6 +80,7 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         closestLabels = [self.y[i] for i in nearestIndexes]
         if self.weight_type=='None':
             prediction = max(closestLabels, key=closestLabels.count)
+            self.yHat.append(prediction)
             return prediction
         elif self.weight_type=='inverse_distance':
             closestWeights = [weghtList[i] for i in nearestIndexes]
@@ -78,6 +93,7 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
                 label_values.append(value_for_label)
             index = label_values.index(max(label_values))
             prediction = list(set(closestLabels))[index]
+            self.yHat.append(prediction)
             return prediction            
 
     #Returns the Mean score given input data and labels
@@ -92,13 +108,23 @@ class KNNClassifier(BaseEstimator,ClassifierMixin):
         """
         for key, value in self.columntype.items():
              if value == 'catagorical':
-                 encode_dict = self.columntype[key]
+                 encode_dict = self.hot_encode[key]
                  X[key] = X[key].replace(list(encode_dict.keys()), list(encode_dict.values()))
         X = X.to_numpy()
-        y = y.to_numpy()
+        if type(y) != np.ndarray: 
+            y = y.to_numpy()
+        if self._normalize_==True:
+            X = self.normalize(X)
         count_ = 0
         for x_,y_ in zip(X,y):
             prediction = self.predict(x_)
             if prediction==y_:
                 count_+=1
         return count_/X.shape[0]
+
+    def _normalize_(self, X:np.ndarray):
+        if X.dtype != 'float64':
+            X=X.astype('float64')
+        for i in range(X.shape[1]):
+            X[:,i] = (X[:,i] - min(X[:,i]))/(max(X[:,i])-min(X[:,i]))
+        return X

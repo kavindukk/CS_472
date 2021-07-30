@@ -35,6 +35,20 @@ KNN_lab/data.csv
 KNN_lab/__pycache__
 # KNN_lab/test.py
 
+KNN_lab/credit_approval.py
+KNN_lab/crx.data
+KNN_lab/diabetes.py
+KNN_lab/diabetes_test.arff
+KNN_lab/diabetes_train.arff
+KNN_lab/housing.py
+KNN_lab/housing_test.arff
+KNN_lab/housing_train.arff
+KNN_lab/magic_telescope.py
+KNN_lab/magic_telescope_test.arff
+KNN_lab/magic_telescope_train.arff
+KNN_lab/plot_.py
+KNN_lab/sklearn___testing.py
 
 
+Clustering_Lab/__pycache__/
 

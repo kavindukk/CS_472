@@ -1,4 +1,6 @@
 
+from numpy.core.fromnumeric import reshape
+from numpy.lib.function_base import append
 from sklearn import cluster
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import AgglomerativeClustering, KMeans
@@ -26,12 +28,15 @@ class HACClustering(BaseEstimator,ClassifierMixin):
         Returns:
             self: this allows this to be chained, e.g. model.fit(X,y).predict(X_test)
         """
-        self.X = X
-        if self.normalize==True: self.normalize()
+        self.X = X         
+        self.X = np.append(self.X, y.reshape(len(y),-1), axis=1) if y else self.X
+        if self.normalize==True: 
+            self.normalize_data()
         self.clusters_ = [i for i in range(X.shape[0])]
-        while len(self.clusters_>3):
+        while len(self.clusters_)>self.k:
             i,j = self.find_closest_clusters()
             self.group_clusters(i,j)
+        centroids = self.find_centroids()
         return self
     
     def print_clusters(self):
@@ -65,7 +70,7 @@ class HACClustering(BaseEstimator,ClassifierMixin):
         col = res[1][0]
         return row, col
 
-    def find_length_between_two_clusters(self, X, idx1, idx2):
+    def find_length_between_two_clusters(self, idx1, idx2):
         indexes1 = tuple(self.clusters_[idx1]) if type(self.clusters_[idx1])==list else self.clusters_[idx1]
         Mat1 = self.X[indexes1,:]
         indexes2 = tuple(self.clusters_[idx2]) if type(self.clusters_[idx2])==list else self.clusters_[idx2]
@@ -118,7 +123,15 @@ class HACClustering(BaseEstimator,ClassifierMixin):
                         lenght_= np.linalg.norm(vec1-vec2)    
         return lenght_
 
-    def normalize(self):
+    def normalize_data(self):
         for i in range(self.X.shape[1]):
             self.X[:,i] = self.X[:,i] - np.amin(self.X[:,i])
             self.X[:,i] = self.X[:,i]/(np.amax(self.X[:,i])-np.amin(self.X[:,i]))
+
+    def find_centroids(self):
+        centroids = []
+        for cluster in self.clusters_:
+            data = self.X[tuple(cluster) if type(cluster)==list else cluster,:]
+            centroid = np.mean(data, axis=0)
+            centroids.append(centroid)
+        return centroids
